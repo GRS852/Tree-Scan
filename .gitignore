@@ -1,0 +1,17 @@
+# Arquivos e pastas de compilação
+/build/
+/android/build/
+/ios/build/
+
+# Outras pastas e arquivos gerados
+.dart_tool/
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Arquivos de configuração da IDE
+.idea/
+.vscode/
+
+# Outros arquivos de dependência e logs
+pubspec.lock
