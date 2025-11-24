@@ -1,25 +1,29 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:green_tree/theme.dart';
-import 'package:green_tree/screens/home_page.dart';
+import 'package:provider/provider.dart';
+import 'state/auth_state.dart';
+import 'screens/home_page.dart'; // Ajuste conforme seu arquivo inicial
+import 'theme.dart'; // Seu arquivo de tema
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthState()),
+      ],
+      child: const TreeScanApp(),
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class TreeScanApp extends StatelessWidget {
+  const TreeScanApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Tree Green',
+      title: 'Tree Scan',
       debugShowCheckedModeBanner: false,
-      theme: lightTheme,
-      darkTheme: darkTheme,
-      themeMode: ThemeMode.dark,
+      theme: lightTheme, // Usando seu tema
       home: const HomePage(),
     );
   }

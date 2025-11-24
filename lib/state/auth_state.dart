@@ -1,35 +1,97 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import '../services/api_service.dart';
 
-/// Simples detentor de estado de autenticação sem backend.
-/// Use AuthState.instance.isLoggedIn para ouvir as mudanças.
-class AuthState {
-  AuthState._internal();
-  static final AuthState instance = AuthState._internal();
+class AuthState extends ChangeNotifier {
+  bool _isAuthenticated = false;
+  bool _isLoading = false;
+  int? _userId;
+  String? _userName;
 
-  final ValueNotifier<bool> isLoggedIn = ValueNotifier<bool>(false);
+  // NOVO CAMPO: Para armazenar a string Base64 da foto de perfil
+  String? _profilePhotoBase64;
 
-  void login() {
-    isLoggedIn.value = true;
+  // --- GETTERS ---
+  bool get isAuthenticated => _isAuthenticated;
+  bool get isLoading => _isLoading;
+  int? get userId => _userId;
+  String? get userName => _userName;
+  // Getter para a foto Base64, usado pelo MenuScreen
+  String? get profilePhotoBase64 => _profilePhotoBase64;
+
+  final ApiService _apiService = ApiService();
+
+  // --- MÉTODOS DE AUTENTICAÇÃO ---
+
+  Future<bool> login(String email, String password) async {
+    _isLoading = true;
+    notifyListeners();
+
+    final result = await _apiService.login(email, password);
+
+    if (result != null && result['status'] == 'success') {
+      _isAuthenticated = true;
+      _userId = result['user_id'];
+      _userName = result['nome'];
+
+      // CARREGA A FOTO BASE64 AO FAZER LOGIN
+      _profilePhotoBase64 = result['foto_perfil_base64'];
+
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } else {
+      _isAuthenticated = false;
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> register(String email, String password, String nome) async {
+    _isLoading = true;
+    notifyListeners();
+
+    final result = await _apiService.register(email, password, nome);
+
+    _isLoading = false;
+    notifyListeners();
+
+    if (result != null && result['status'] == 'success') {
+      return true;
+    }
+    return false;
+  }
+
+  // NOVO MÉTODO: Envia o Base64 da nova foto para o Flask e atualiza o estado
+  Future<void> updateProfilePhoto(String base64Data) async {
+    // Garante que haja um usuário logado
+    if (_userId == null) return;
+
+    _isLoading = true;
+    notifyListeners();
+
+    // Chama o serviço para enviar o Base64 e salvar no PostgreSQL
+    final updatedData = await _apiService.updateProfilePhoto(_userId!, base64Data);
+
+    _isLoading = false;
+    if (updatedData != null) {
+      // O 'updatedData' é a nova string Base64 retornada pelo servidor
+      _profilePhotoBase64 = updatedData;
+      notifyListeners();
+    }
+  }
+
+  // Placeholder para compatibilidade
+  Future<bool> googleSignIn() async {
+    return false;
   }
 
   void logout() {
-    isLoggedIn.value = false;
-  }
-
-  /// Fluxo de registro de espaço reservado sem backend.
-  /// Retorna verdadeiro quando o registro simulado for bem-sucedido.
-  Future<bool> register({required String email, required String password}) async {
-    await Future.delayed(const Duration(milliseconds: 600));
-    // Em uma implementação real, chame seu backend (por exemplo, Firebase Auth)
-    isLoggedIn.value = true;
-    return true;
-  }
-
-  /// Placeholder do Google Sign-In. Retorna falso enquanto nenhum backend estiver configurado.
-  /// Uma vez que a API esteja conectada, isso deve ser implementado para realizar
-  /// o Google OAuth e definir [isLoggedIn] de acordo.
-  Future<bool> googleSignIn() async {
-    // Nenhum backend conectado: sinalize que não está disponível
-    return false;
+    _isAuthenticated = false;
+    _userId = null;
+    _userName = null;
+    // LIMPA O CAMPO BASE64 NO LOGOUT
+    _profilePhotoBase64 = null;
+    notifyListeners();
   }
 }

@@ -1,50 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:green_tree/state/auth_state.dart';
-import 'package:green_tree/widgets/custom_text_field.dart';
-import 'package:green_tree/widgets/transparent_card.dart';
+import 'package:provider/provider.dart';
+import '../state/auth_state.dart';
+import '../widgets/custom_text_field.dart';
+import '../widgets/custom_button.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
-
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _email = TextEditingController();
-  final _password = TextEditingController();
-  final _confirm = TextEditingController();
-  bool _loading = false;
-
-  @override
-  void dispose() {
-    _email.dispose();
-    _password.dispose();
-    _confirm.dispose();
-    super.dispose();
-  }
-
-  Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
-    setState(() => _loading = true);
-    final success = await AuthState.instance.register(
-      email: _email.text.trim(),
-      password: _password.text,
-    );
-    if (!mounted) return;
-    setState(() => _loading = false);
-    if (success) {
-      Navigator.pop(context);
-    }
-  }
+  // Controladores para os campos de texto
+  final _emailController = TextEditingController();
+  final _passController = TextEditingController();
+  final _nameController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Criar conta'),
+        title: Text('Novo Cadastro', style: GoogleFonts.inter(color: Colors.white)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Container(
         decoration: const BoxDecoration(
@@ -53,68 +33,92 @@ class _RegisterScreenState extends State<RegisterScreen> {
             fit: BoxFit.cover,
           ),
         ),
-        child: SafeArea(
-          child: Center(
+        child: Center(
+          // Adiciona um overlay escuro para melhorar a legibilidade
+          child: Container(
+            color: Colors.black.withOpacity(0.5),
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24),
-              child: TransparentCard(
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
+              child: Consumer<AuthState>(
+                builder: (context, authState, _) {
+                  return Column(
                     children: [
                       Text(
-                        'Criar conta',
-                        style: GoogleFonts.poppins(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          'Crie Sua Conta Tree-Scan',
+                          style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold
+                          )
+                      ),
+                      const SizedBox(height: 30),
+
+                      // CAMPO NOME
+                      CustomTextField(
+                          controller: _nameController,
+                          label: 'Nome Completo',
+                          icon: Icons.person
+                      ),
+                      const SizedBox(height: 15),
+
+                      // CAMPO EMAIL
+                      CustomTextField(
+                          controller: _emailController,
+                          label: 'Email',
+                          icon: Icons.email
+                      ),
+                      const SizedBox(height: 15),
+
+                      // CAMPO SENHA
+                      CustomTextField(
+                          controller: _passController,
+                          label: 'Senha',
+                          icon: Icons.lock,
+                          isPassword: true
+                      ),
+                      const SizedBox(height: 30),
+
+                      if (authState.isLoading)
+                        const CircularProgressIndicator(color: Color(0xFF7FAD9E))
+                      else
+                        CustomButton(
+                          text: 'CADASTRAR',
+                          onPressed: () async {
+                            // Chamada à API de Registro
+                            bool ok = await authState.register(
+                              // É importante manter a ordem dos parâmetros (nome, email, senha)
+                              // de acordo com a função 'register' no AuthState
+                              _nameController.text,
+                              _emailController.text,
+                              _passController.text,
+                            );
+
+                            if (ok && mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Registro concluído! Faça login.')),
+                              );
+                              Navigator.pop(context); // Volta para a tela de Login
+                            } else if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Falha: Email já existe ou erro no servidor.')),
+                              );
+                            }
+                          },
                         ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 24),
-                      CustomTextField(
-                        controller: _email,
-                        label: 'Email',
-                        keyboard: TextInputType.emailAddress,
-                        validator: (v) => v == null || v.isEmpty ? 'Informe seu email' : null,
-                      ),
-                      const SizedBox(height: 16),
-                      CustomTextField(
-                        controller: _password,
-                        label: 'Senha',
-                        obscure: true,
-                        validator: (v) => v == null || v.length < 6 ? 'Use ao menos 6 caracteres' : null,
-                      ),
-                      const SizedBox(height: 16),
-                      CustomTextField(
-                        controller: _confirm,
-                        label: 'Confirmar senha',
-                        obscure: true,
-                        validator: (v) => v != _password.text ? 'As senhas não coincidem' : null,
-                      ),
-                      const SizedBox(height: 24),
-                      SizedBox(
-                        height: 52,
-                        child: ElevatedButton(
-                          onPressed: _loading ? null : _submit,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF2C5F4F),
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          ),
-                          child: _loading
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                                )
-                              : Text('Criar conta', style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 10),
+
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context); // Volta para Login
+                        },
+                        child: Text(
+                          'Cancelar e Voltar para Login',
+                          style: GoogleFonts.poppins(color: Colors.white70),
                         ),
-                      ),
+                      )
                     ],
-                  ),
-                ),
+                  );
+                },
               ),
             ),
           ),

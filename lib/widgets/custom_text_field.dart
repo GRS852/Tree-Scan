@@ -6,7 +6,10 @@ class CustomTextField extends StatelessWidget {
   final String label;
   final TextInputType? keyboard;
   final String? Function(String?)? validator;
-  final bool obscure;
+  // --- CORREÇÃO AQUI: Renomeando 'obscure' para 'isPassword' ---
+  final bool isPassword;
+
+  final IconData? icon;
 
   const CustomTextField({
     super.key,
@@ -14,7 +17,10 @@ class CustomTextField extends StatelessWidget {
     required this.label,
     this.keyboard,
     this.validator,
-    this.obscure = false,
+    // --- CORREÇÃO AQUI: Usando 'isPassword' no construtor ---
+    this.isPassword = false,
+    // --------------------------------------------------------
+    this.icon,
   });
 
   @override
@@ -24,10 +30,19 @@ class CustomTextField extends StatelessWidget {
       validator: validator,
       keyboardType: keyboard,
       style: GoogleFonts.poppins(color: Colors.white),
-      obscureText: obscure,
+
+      // --- USANDO O NOVO NOME DO PARÂMETRO ---
+      obscureText: isPassword, // Usa 'isPassword' para definir obscureText
+      // ----------------------------------------
+
       decoration: InputDecoration(
         labelText: label,
         labelStyle: GoogleFonts.poppins(color: Colors.white.withOpacity(0.9)),
+
+        prefixIcon: icon != null
+            ? Icon(icon, color: Colors.white.withOpacity(0.7))
+            : null,
+
         filled: true,
         fillColor: Colors.black.withOpacity(0.35),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
