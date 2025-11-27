@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../state/auth_state.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/custom_button.dart';
+import 'home_page.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -86,18 +87,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           onPressed: () async {
                             // Chamada à API de Registro
                             bool ok = await authState.register(
-                              // É importante manter a ordem dos parâmetros (nome, email, senha)
-                              // de acordo com a função 'register' no AuthState
                               _nameController.text,
                               _emailController.text,
                               _passController.text,
                             );
 
                             if (ok && mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Registro concluído! Faça login.')),
+                              Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(builder: (_) => const HomePage()),
+                                (route) => false,
                               );
-                              Navigator.pop(context); // Volta para a tela de Login
                             } else if (mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(content: Text('Falha: Email já existe ou erro no servidor.')),

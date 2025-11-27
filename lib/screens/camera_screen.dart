@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:green_tree/screens/confirmation_screen.dart';
+import 'package:green_tree/screens/denuncia_form_screen.dart';
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});
@@ -16,6 +17,7 @@ class _CameraScreenState extends State<CameraScreen> {
   List<CameraDescription>? _cameras;
   bool _isInitialized = false;
   bool _permissionDenied = false;
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -58,16 +60,27 @@ class _CameraScreenState extends State<CameraScreen> {
     try {
       final image = await _controller!.takePicture();
       if (mounted) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ConfirmationScreen(imagePath: image.path),
-          ),
-        );
+        _openForm(image.path);
       }
     } catch (e) {
       debugPrint('Erro ao tirar foto: $e');
     }
+  }
+
+  Future<void> _pickFromGallery() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
+    if (image != null && mounted) {
+      _openForm(image.path);
+    }
+  }
+
+  void _openForm(String imagePath) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DenunciaFormScreen(imagePath: imagePath),
+      ),
+    );
   }
 
   @override
@@ -162,6 +175,24 @@ class _CameraScreenState extends State<CameraScreen> {
                   ],
                 ),
               ),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 40,
+          right: 20,
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.black.withOpacity(0.6),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            ),
+            onPressed: _pickFromGallery,
+            icon: const Icon(Icons.photo_library_outlined),
+            label: Text(
+              'Galeria',
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
             ),
           ),
         ),
