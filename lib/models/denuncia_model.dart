@@ -4,6 +4,7 @@ class DenunciaModel {
   final String descricao;
   final String dataSolicitacao;
   final bool riscoQueda;
+  final String? imgDenBase64;
 
   DenunciaModel({
     required this.id,
@@ -11,6 +12,7 @@ class DenunciaModel {
     required this.descricao,
     required this.dataSolicitacao,
     required this.riscoQueda,
+    this.imgDenBase64,
   });
 
   bool get isPendente => codigoProtocolo == null || codigoProtocolo!.isEmpty;
@@ -23,6 +25,7 @@ class DenunciaModel {
       descricao: json['descricao'] ?? 'Sem descrição',
       dataSolicitacao: json['data_solicitacao'] ?? '',
       riscoQueda: json['risco_queda'] ?? false,
+      imgDenBase64: json['img_den'],
     );
   }
 }

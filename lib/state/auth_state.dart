@@ -47,18 +47,22 @@ class AuthState extends ChangeNotifier {
     }
   }
 
-  Future<bool> register(String email, String password, String nome) async {
+  Future<bool> register(String nome, String email, String password) async {
     _isLoading = true;
     notifyListeners();
 
     final result = await _apiService.register(email, password, nome);
 
+    if (result != null && result['status'] == 'success') {
+      // Realiza login automático para já carregar as informações do usuário
+      final logged = await login(email, password);
+      _isLoading = false;
+      notifyListeners();
+      return logged;
+    }
+
     _isLoading = false;
     notifyListeners();
-
-    if (result != null && result['status'] == 'success') {
-      return true;
-    }
     return false;
   }
 

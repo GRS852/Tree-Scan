@@ -1,9 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../state/auth_state.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/custom_button.dart';
+import 'home_page.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -16,6 +19,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passController = TextEditingController();
   final _nameController = TextEditingController();
+
+  Widget _buildProfilePreview(AuthState authState) {
+    final base64Data = authState.profilePhotoBase64;
+
+    if (base64Data != null && base64Data.isNotEmpty) {
+      try {
+        final cleanBase64 = base64Data.split(',').last;
+        final bytes = base64Decode(cleanBase64);
+        return Image.memory(bytes, fit: BoxFit.cover);
+      } catch (_) {
+        // Ignora falhas de decodificação e cai no placeholder
+      }
+    }
+
+    return Image.asset(
+      'assets/images/folha.jpg',
+      fit: BoxFit.cover,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +72,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               fontSize: 24,
                               fontWeight: FontWeight.bold
                           )
+                      ),
+                      const SizedBox(height: 20),
+                      Container(
+                        width: 140,
+                        height: 140,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.black.withOpacity(0.3),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 10,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                        child: ClipOval(child: _buildProfilePreview(authState)),
                       ),
                       const SizedBox(height: 30),
 
@@ -86,18 +125,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           onPressed: () async {
                             // Chamada à API de Registro
                             bool ok = await authState.register(
-                              // É importante manter a ordem dos parâmetros (nome, email, senha)
-                              // de acordo com a função 'register' no AuthState
                               _nameController.text,
                               _emailController.text,
                               _passController.text,
                             );
 
                             if (ok && mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Registro concluído! Faça login.')),
+                              Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(builder: (_) => const HomePage()),
+                                (route) => false,
                               );
-                              Navigator.pop(context); // Volta para a tela de Login
                             } else if (mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(content: Text('Falha: Email já existe ou erro no servidor.')),

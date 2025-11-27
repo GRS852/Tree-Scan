@@ -79,4 +79,27 @@ class ApiService {
     }
     return [];
   }
+
+  Future<bool> enviarDenuncia({
+    required String endereco,
+    required String imagemBase64,
+    int? userId,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/denuncia'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'endereco': endereco,
+          'imagem_base64': imagemBase64,
+          if (userId != null) 'user_id': userId,
+        }),
+      );
+
+      return response.statusCode == 200 || response.statusCode == 201;
+    } catch (e) {
+      print('Erro ao enviar denúncia: $e');
+    }
+    return false;
+  }
 }
