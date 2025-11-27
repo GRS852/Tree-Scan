@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+
 import 'package:google_fonts/google_fonts.dart';
 import '../models/denuncia_model.dart';
 import '../services/api_service.dart';
+import 'process_detail_screen.dart';
 
 class HistoryScreen extends StatefulWidget {
   final int userId;
@@ -15,6 +19,38 @@ class HistoryScreen extends StatefulWidget {
 class _HistoryScreenState extends State<HistoryScreen> {
   final ApiService _apiService = ApiService();
   late Future<List<DenunciaModel>> _historicoFuture;
+
+  Widget _buildPreview(DenunciaModel item) {
+    final placeholder = ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: Image.asset(
+        'assets/images/folha.jpg',
+        width: 70,
+        height: 70,
+        fit: BoxFit.cover,
+      ),
+    );
+
+    if (item.imgDenBase64 == null || item.imgDenBase64!.isEmpty) {
+      return placeholder;
+    }
+
+    try {
+      final cleanBase64 = item.imgDenBase64!.split(',').last;
+      final bytes = base64Decode(cleanBase64);
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Image.memory(
+          bytes,
+          width: 70,
+          height: 70,
+          fit: BoxFit.cover,
+        ),
+      );
+    } catch (_) {
+      return placeholder;
+    }
+  }
 
   @override
   void initState() {
@@ -76,55 +112,84 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       ? const Color(0xFFE5BE01)
                       : const Color(0xFF7FAD9E);
 
-                  return Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.4),
+                  return Material(
+                    color: Colors.transparent,
+                    child: InkWell(
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.white.withOpacity(0.1)),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ProcessDetailScreen(process: item),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.4),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.white.withOpacity(0.1)),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              item.dataSolicitacao,
-                              style: GoogleFonts.inter(color: Colors.white54, fontSize: 12),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: statusColor.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: statusColor),
-                              ),
-                              child: Text(
-                                item.isPendente ? 'PENDENTE' : 'PROTOCOLADO',
-                                style: GoogleFonts.poppins(
-                                  color: statusColor,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 10,
-                                ),
+                            _buildPreview(item),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        item.dataSolicitacao,
+                                        style: GoogleFonts.inter(color: Colors.white54, fontSize: 12),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: statusColor.withOpacity(0.2),
+                                          borderRadius: BorderRadius.circular(8),
+                                          border: Border.all(color: statusColor),
+                                        ),
+                                        child: Text(
+                                          item.isPendente ? 'PENDENTE' : 'PROTOCOLADO',
+                                          style: GoogleFonts.poppins(
+                                            color: statusColor,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 10,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    item.descricao,
+                                    style: GoogleFonts.poppins(
+                                      color: Colors.white,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  if (!item.isPendente) ...[
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Protocolo: ${item.codigoProtocolo}',
+                                      style: GoogleFonts.sourceCodePro(
+                                        color: statusColor,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ]
+                                ],
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          item.descricao,
-                          style: GoogleFonts.poppins(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        if (!item.isPendente) ...[
-                          const SizedBox(height: 8),
-                          Text('Protocolo: ${item.codigoProtocolo}', style: GoogleFonts.sourceCodePro(color: statusColor, fontSize: 12)),
-                        ]
-                      ],
+                      ),
                     ),
                   );
                 },
