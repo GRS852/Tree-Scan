@@ -9,6 +9,7 @@ import '../state/auth_state.dart';
 import 'login_screen.dart';
 import 'history_screen.dart';
 import 'register_screen.dart'; // NOVO: Importa a tela de Registro
+import 'home_page.dart';
 
 class MenuScreen extends StatelessWidget {
   const MenuScreen({super.key});
@@ -163,6 +164,11 @@ class MenuScreen extends StatelessWidget {
                   if (authState.isAuthenticated) {
                     authState.logout();
                     Navigator.pop(context);
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (_) => const HomePage()),
+                      (route) => false,
+                    );
                   } else {
                     // Navega para Login, se o usuário não estiver logado.
                     Navigator.push(

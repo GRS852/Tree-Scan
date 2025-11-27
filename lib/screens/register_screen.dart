@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -17,6 +19,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passController = TextEditingController();
   final _nameController = TextEditingController();
+
+  Widget _buildProfilePreview(AuthState authState) {
+    final base64Data = authState.profilePhotoBase64;
+
+    if (base64Data != null && base64Data.isNotEmpty) {
+      try {
+        final cleanBase64 = base64Data.split(',').last;
+        final bytes = base64Decode(cleanBase64);
+        return Image.memory(bytes, fit: BoxFit.cover);
+      } catch (_) {
+        // Ignora falhas de decodificação e cai no placeholder
+      }
+    }
+
+    return Image.asset(
+      'assets/images/folha.jpg',
+      fit: BoxFit.cover,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,6 +72,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               fontSize: 24,
                               fontWeight: FontWeight.bold
                           )
+                      ),
+                      const SizedBox(height: 20),
+                      Container(
+                        width: 140,
+                        height: 140,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.black.withOpacity(0.3),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 10,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                        child: ClipOval(child: _buildProfilePreview(authState)),
                       ),
                       const SizedBox(height: 30),
 
