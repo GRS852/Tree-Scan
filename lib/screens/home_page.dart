@@ -36,15 +36,11 @@ class HomePage extends StatelessWidget {
       }
     }
 
-    return Center(
-      child: Text(
-        'Login',
-        style: GoogleFonts.poppins(
-          color: Colors.white,
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
+    return ClipOval(
+      child: Image.asset(
+        'assets/images/folha.jpg',
+        fit: BoxFit.cover,
+      )
     );
   }
 
@@ -56,7 +52,7 @@ class HomePage extends StatelessWidget {
         builder: (context, authState, _) {
           final userName = authState.isAuthenticated && authState.userName != null
               ? authState.userName!
-              : 'Login';
+              : 'Tree Green';
 
           return Container(
             decoration: const BoxDecoration(
