@@ -87,7 +87,7 @@ class ApiService {
   }) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/denuncia'),
+        Uri.parse('$baseUrl/analisar'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'endereco': endereco,

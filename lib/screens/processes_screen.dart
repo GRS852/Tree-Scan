@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../models/denuncia_model.dart';
 import '../services/api_service.dart';
 import '../state/auth_state.dart';
+import 'process_detail_screen.dart';
 
 class ProcessesScreen extends StatefulWidget {
   const ProcessesScreen({super.key});
@@ -32,15 +33,14 @@ class _ProcessesScreenState extends State<ProcessesScreen> {
   }
 
   Widget _buildPreview(DenunciaModel item) {
-    final placeholder = Container(
-      width: 70,
-      height: 70,
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white24),
+    final placeholder = ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: Image.asset(
+        'assets/images/folha.jpg',
+        width: 70,
+        height: 70,
+        fit: BoxFit.cover,
       ),
-      child: const Icon(Icons.image_not_supported, color: Colors.white70),
     );
 
     if (item.imgDenBase64 == null || item.imgDenBase64!.isEmpty) {
@@ -128,73 +128,87 @@ class _ProcessesScreenState extends State<ProcessesScreen> {
                           ? const Color(0xFFE5BE01)
                           : const Color(0xFF7FAD9E);
 
-                      return Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.35),
+                      return Material(
+                        color: Colors.transparent,
+                        child: InkWell(
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.white.withOpacity(0.1)),
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildPreview(item),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ProcessDetailScreen(process: item),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.35),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.white.withOpacity(0.1)),
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildPreview(item),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            item.dataSolicitacao,
+                                            style: GoogleFonts.inter(
+                                              color: Colors.white70,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                            decoration: BoxDecoration(
+                                              color: statusColor.withOpacity(0.2),
+                                              borderRadius: BorderRadius.circular(8),
+                                              border: Border.all(color: statusColor),
+                                            ),
+                                            child: Text(
+                                              item.isPendente ? 'PENDENTE' : 'PROTOCOLADO',
+                                              style: GoogleFonts.poppins(
+                                                color: statusColor,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 10,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 8),
                                       Text(
-                                        item.dataSolicitacao,
-                                        style: GoogleFonts.inter(
-                                          color: Colors.white70,
-                                          fontSize: 12,
+                                        item.descricao,
+                                        style: GoogleFonts.poppins(
+                                          color: Colors.white,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
                                         ),
                                       ),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                        decoration: BoxDecoration(
-                                          color: statusColor.withOpacity(0.2),
-                                          borderRadius: BorderRadius.circular(8),
-                                          border: Border.all(color: statusColor),
-                                        ),
-                                        child: Text(
-                                          item.isPendente ? 'PENDENTE' : 'PROTOCOLADO',
-                                          style: GoogleFonts.poppins(
+                                      if (!item.isPendente) ...[
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          'Protocolo: ${item.codigoProtocolo}',
+                                          style: GoogleFonts.sourceCodePro(
                                             color: statusColor,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 10,
+                                            fontSize: 12,
                                           ),
                                         ),
-                                      ),
+                                      ],
                                     ],
                                   ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    item.descricao,
-                                    style: GoogleFonts.poppins(
-                                      color: Colors.white,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  if (!item.isPendente) ...[
-                                    const SizedBox(height: 6),
-                                    Text(
-                                      'Protocolo: ${item.codigoProtocolo}',
-                                      style: GoogleFonts.sourceCodePro(
-                                        color: statusColor,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
                       );
                     },
