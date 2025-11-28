@@ -20,25 +20,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passController = TextEditingController();
   final _nameController = TextEditingController();
 
-  Widget _buildProfilePreview(AuthState authState) {
-    final base64Data = authState.profilePhotoBase64;
-
-    if (base64Data != null && base64Data.isNotEmpty) {
-      try {
-        final cleanBase64 = base64Data.split(',').last;
-        final bytes = base64Decode(cleanBase64);
-        return Image.memory(bytes, fit: BoxFit.cover);
-      } catch (_) {
-        // Ignora falhas de decodificação e cai no placeholder
-      }
-    }
-
-    return Image.asset(
-      'assets/images/folha.jpg',
-      fit: BoxFit.cover,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -66,7 +47,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   return Column(
                     children: [
                       Text(
-                          'Crie Sua Conta Tree-Scan',
+                          'Crie sua conta',
                           style: GoogleFonts.inter(
                               color: Colors.white,
                               fontSize: 24,
@@ -74,24 +55,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           )
                       ),
                       const SizedBox(height: 20),
-                      Container(
-                        width: 140,
-                        height: 140,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.black.withOpacity(0.3),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              blurRadius: 10,
-                              spreadRadius: 2,
-                            ),
-                          ],
-                        ),
-                        child: ClipOval(child: _buildProfilePreview(authState)),
-                      ),
                       const SizedBox(height: 30),
-
                       // CAMPO NOME
                       CustomTextField(
                           controller: _nameController,
@@ -147,7 +111,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                       TextButton(
                         onPressed: () {
-                          Navigator.pop(context); // Volta para Login
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(builder: (_) => const HomePage()), // ou LoginScreen
+                                (route) => false,
+                          ); // Volta para Login
                         },
                         child: Text(
                           'Cancelar e Voltar para Login',
