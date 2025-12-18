@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:green_tree/screens/camera_screen.dart';
 import 'package:green_tree/state/auth_state.dart';
+import 'package:green_tree/services/whatsapp_service.dart';
 import 'package:green_tree/widgets/app_bottom_nav.dart';
 import 'package:green_tree/widgets/transparent_card.dart';
 import 'package:green_tree/widgets/custom_button.dart';
@@ -18,6 +19,18 @@ class HomePage extends StatelessWidget {
       context,
       MaterialPageRoute(builder: (context) => const CameraScreen()),
     );
+  }
+
+  Future<void> _openWhatsAppChat(BuildContext context) async {
+    try {
+      await WhatsAppService.openChat();
+    } catch (_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Não foi possível abrir o WhatsApp no momento.'),
+        ),
+      );
+    }
   }
 
   Widget _buildAvatar(AuthState authState) {
@@ -109,6 +122,11 @@ class HomePage extends StatelessWidget {
                           text: 'Denúnciar',
                           onPressed: () => _navigateToCamera(context),
                           isDark: true,
+                        ),
+                        const SizedBox(height: 16),
+                        CustomButton(
+                          text: 'Falar no WhatsApp',
+                          onPressed: () => _openWhatsAppChat(context),
                         ),
                       ],
                     ),
