@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import '../state/auth_state.dart';
+import '../services/whatsapp_service.dart';
 import 'login_screen.dart';
 import 'history_screen.dart';
 import 'register_screen.dart'; // NOVO: Importa a tela de Registro
@@ -35,6 +36,18 @@ class MenuScreen extends StatelessWidget {
           SnackBar(content: Text('Erro ao processar imagem: $e')),
         );
       }
+    }
+  }
+
+  Future<void> _openWhatsAppChat(BuildContext context) async {
+    try {
+      await WhatsAppService.openChat();
+    } catch (_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Não foi possível abrir o WhatsApp no momento.'),
+        ),
+      );
     }
   }
 
@@ -149,6 +162,12 @@ class MenuScreen extends StatelessWidget {
                 ),
 
               const Divider(color: Colors.white24),
+
+              ListTile(
+                leading: const Icon(Icons.chat, color: Colors.white),
+                title: Text('Falar pelo WhatsApp', style: GoogleFonts.poppins(color: Colors.white)),
+                onTap: () => _openWhatsAppChat(context),
+              ),
 
               // Item de Login/Logout
               ListTile(
